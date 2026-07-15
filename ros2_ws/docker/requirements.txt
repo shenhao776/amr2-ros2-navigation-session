@@ -1,0 +1,13 @@
+# === EXACT versions from ros2_ws container (2026-06-30 snapshot) ===
+numpy==2.2.6
+scipy==1.15.3
+matplotlib==3.10.9
+open3d==0.19.0
+protobuf==3.20.3
+opencv-python==5.0.0.93
+paho-mqtt==2.1.0
+pyserial-asyncio==0.6
+pypcd==0.1.1
+rosbags==0.11.3
+pynput==1.8.2
+kiss-icp==1.3.0

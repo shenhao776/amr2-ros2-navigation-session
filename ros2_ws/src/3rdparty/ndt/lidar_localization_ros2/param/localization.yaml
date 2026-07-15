@@ -1,0 +1,42 @@
+/**:
+    ros__parameters:
+      registration_method: "NDT_OMP"
+      score_threshold: 2.0
+      ndt_resolution: 1.0
+      ndt_step_size: 0.1
+      ndt_num_threads: 4
+      ndt_max_iterations: 35
+      transform_epsilon: 0.01
+      voxel_leaf_size: 0.2
+      scan_max_range: 100.0
+      scan_min_range: 1.0
+      scan_period: 0.1
+      use_pcd_map: true
+      # map_path: "/root/shared_files/map/inlab.pcd"
+      map_path: "/root/shared_files/dataset/my_map_data/PCD/map_final_visualization.pcd"
+      set_initial_pose: true
+
+      # fix the initial pose here
+      # initial_pose_x: -13.333389282226562
+      # initial_pose_y: 77.50865173339844
+      # initial_pose_z: -2.1609785556793213
+      # initial_pose_qx: -0.03941242158621084
+      # initial_pose_qy: 0.00807420141624668
+      # initial_pose_qz: 0.10156714919414923
+      # initial_pose_qw: 0.9940148669369684
+      
+      initial_pose_x: 0.0
+      initial_pose_y: 0.0
+      initial_pose_z: 0.0
+      initial_pose_qx: 0.0
+      initial_pose_qy: 0.0
+      initial_pose_qz: 0.0
+      initial_pose_qw: 1.0
+
+      use_odom: false
+      use_imu: false
+      imu_topic: /livox/imu
+      enable_debug: false
+      global_frame_id: map
+      odom_frame_id: livox_odom
+      base_frame_id: base_link

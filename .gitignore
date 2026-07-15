@@ -1,0 +1,22 @@
+log/
+.vscode/
+*__pycache__*
+.spyproject
+.idea
+__pycache__
+logs
+cache
+jobs
+ros2_ws/build/
+ros2_ws/install/
+ros2_ws/log/
+*.csv
+*.mp4
+*.png
+*.out
+.claude
+
+# SSL Certificates and Keys
+/certs/
+*.pem
+

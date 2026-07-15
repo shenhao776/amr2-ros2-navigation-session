@@ -1,0 +1,70 @@
+udp_server_node:
+  ros__parameters:
+    udp_port: 8888
+    udp_buffer_size: 4096
+    udp_timeout_sec: 1000000.0
+
+# 2. 配置 Robot Agent 节点 (负责核心逻辑与路径规划)
+robot_agent_node:
+  ros__parameters:
+    # --- 连接性参数 ---
+    # A*搜索时，两点之间被视为连通的最大距离（米）。
+    # 必须大于点云采集时的间距，否则无法生成路径。建议 1.0 ~ 2.0。
+    connection_radius: 2.0
+    
+    # --- 任务范围 ---
+    # 以目标点为中心，搜索多大路程内的点作为扫描任务目标（米）
+    max_tour_length: 10.0 
+
+    # --- 路径密度 ---
+    # 对最终生成的路径进行降采样，确保航点间的最小距离（米）
+    path_density: 0.1 
+
+    # --- 任务模式选择 ---
+    # 可选值: "patrol", "scan_all", "single_point"
+    # "patrol": 默认的巡逻模式 (O->A->B->C->O)
+    # "scan_all": 全图扫描模式，遍历所有定位点
+    # "single_point": 单点扫描模式 (O->A->O)
+    mission_mode: "single_point"
+    debug_mode: false 
+
+    # --- 文件路径 ---
+    localization_file_path: "/root/shared_files/dataset/my_map_data/result/localization_output.txt"
+    
+    # --- Bag 录制 ---
+    enable_bag_recording: true
+    bag_storage_path: "/root/shared_files/dataset/ros2bags"
+    bag_record_topics: >
+      /tf /tf_static /livox/lidar /livox/point /livox/imu /scan /camera/camera/color/image_raw/compressed
+      /pcl_pose /goal_pose /plan /local_plan /global_costmap/costmap /local_costmap/costmap
+      /global_costmap/footprint /local_costmap/footprint /received_path
+      /received_target_pose /all_poses_cloud
+
+    automatic_update_map: false
+
+    default_start_pose:
+      x: 0.0
+      y: 0.0
+      z: 0.0
+
+    # --- 固定巡航点 ---
+    # 格式: [x1, y1, x2, y2, ...]
+    # 这些点用于 "scan_all" 模式或 debug_mode
+    fixed_waypoints: [
+      19.17699, -12.22447,
+      20.53834, -2.91682,
+      7.89394, 2.99846,
+      -35.42642, 32.16340,
+      -47.18881, -15.03499,
+      -72.68433, 42.57991,
+      -65.11407, 73.69182,
+      -50.11021, 119.28830,
+      -33.77602, 98.79595,
+      -22.27493, 104.77673,
+      -37.45331, 89.98773,
+      -45.65190, 74.89980,
+      -52.32320, 75.60095,
+      -50.83457, 53.18017,
+      -43.26955, 44.88830,
+      -46.58889, 37.49144
+    ]

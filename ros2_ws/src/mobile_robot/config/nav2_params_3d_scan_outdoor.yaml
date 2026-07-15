@@ -1,0 +1,292 @@
+bt_navigator:
+  ros__parameters:
+    use_sim_time: True
+    global_frame: map
+    robot_base_frame: base_link
+    odom_topic: /kiss/odometry
+    bt_loop_duration: 10
+    default_server_timeout: 20
+    # [保持] 抗跳变容差
+    transform_tolerance: 0.5
+    plugin_lib_names:
+      - nav2_compute_path_to_pose_action_bt_node
+      - nav2_compute_path_through_poses_action_bt_node
+      - nav2_smooth_path_action_bt_node
+      - nav2_follow_path_action_bt_node
+      - nav2_spin_action_bt_node
+      - nav2_wait_action_bt_node
+      - nav2_assisted_teleop_action_bt_node
+      - nav2_back_up_action_bt_node
+      - nav2_drive_on_heading_bt_node
+      - nav2_clear_costmap_service_bt_node
+      - nav2_is_stuck_condition_bt_node
+      - nav2_goal_reached_condition_bt_node
+      - nav2_goal_updated_condition_bt_node
+      - nav2_globally_updated_goal_condition_bt_node
+      - nav2_is_path_valid_condition_bt_node
+      - nav2_initial_pose_received_condition_bt_node
+      - nav2_reinitialize_global_localization_service_bt_node
+      - nav2_rate_controller_bt_node
+      - nav2_distance_controller_bt_node
+      - nav2_speed_controller_bt_node
+      - nav2_truncate_path_action_bt_node
+      - nav2_truncate_path_local_action_bt_node
+      - nav2_goal_updater_node_bt_node
+      - nav2_recovery_node_bt_node
+      - nav2_pipeline_sequence_bt_node
+      - nav2_round_robin_node_bt_node
+      - nav2_transform_available_condition_bt_node
+      - nav2_time_expired_condition_bt_node
+      - nav2_path_expiring_timer_condition
+      - nav2_distance_traveled_condition_bt_node
+      - nav2_single_trigger_bt_node
+      - nav2_goal_updated_controller_bt_node
+      - nav2_is_battery_low_condition_bt_node
+      - nav2_navigate_through_poses_action_bt_node
+      - nav2_navigate_to_pose_action_bt_node
+      - nav2_remove_passed_goals_action_bt_node
+      - nav2_planner_selector_bt_node
+      - nav2_controller_selector_bt_node
+      - nav2_goal_checker_selector_bt_node
+      - nav2_controller_cancel_bt_node
+      - nav2_path_longer_on_approach_bt_node
+      - nav2_wait_cancel_bt_node
+      - nav2_spin_cancel_bt_node
+      - nav2_back_up_cancel_bt_node
+      - nav2_assisted_teleop_cancel_bt_node
+      - nav2_drive_on_heading_cancel_bt_node
+      - nav2_is_battery_charging_condition_bt_node
+
+bt_navigator_navigate_through_poses_rclcpp_node:
+  ros__parameters:
+    use_sim_time: True
+
+bt_navigator_navigate_to_pose_rclcpp_node:
+  ros__parameters:
+    use_sim_time: True
+
+controller_server:
+  ros__parameters:
+    use_sim_time: True
+    controller_frequency: 20.0
+    # [修改] 提高最小X速度，防止低速摩擦震荡
+    min_x_velocity_threshold: 0.1
+    # [修改] 差速底盘必须为 0.0，否则可能导致控制器行为异常
+    min_y_velocity_threshold: 0.0
+    min_theta_velocity_threshold: 0.01
+    # [保持] 快速报错逻辑
+    failure_tolerance: 1.0
+    progress_checker_plugin: "progress_checker"
+    goal_checker_plugins: ["general_goal_checker"] 
+    controller_plugins: ["FollowPath"]
+
+    progress_checker:
+      plugin: "nav2_controller::SimpleProgressChecker"
+      required_movement_radius: 0.05 
+      # [保持] 快速超时逻辑
+      movement_time_allowance: 5.0
+      
+    general_goal_checker:
+      stateful: True
+      plugin: "nav2_controller::SimpleGoalChecker"
+      xy_goal_tolerance: 0.25
+      yaw_goal_tolerance: 0.1 
+    
+    FollowPath:
+      plugin: "nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController"
+      # [修改] 目标线速度提升至 1.5
+      desired_linear_vel: 1.0
+      
+      # === 解决Yaw震荡的关键修改区 ===
+      # 原理：看远一点，忽略路径上的微小抖动，切弯行驶
+      lookahead_dist: 2.5           # [增大] 基础前视距离，原来的2.0对于1.5m/s来说有点短
+      min_lookahead_dist: 1.0       # [增大] 即使在低速下，也保持至少1米的前视距离，防止贴得太近导致蛇形
+      max_lookahead_dist: 3.5       # [增大] 允许看更远
+      lookahead_time: 2.0           # [增大] 动态前视时间。速度1.5时，前视距离会达到 3.0m
+      
+      rotate_to_heading_min_angle: 1.5
+      transform_tolerance: 0.5
+      use_velocity_scaled_lookahead_dist: true
+      min_approach_linear_velocity: 0.05
+      approach_velocity_scaling_dist: 1.0
+      
+      # 碰撞检测
+      use_collision_detection: false # 注意：关闭此项会让控制器只管跑，不避障（依赖Costmap的膨胀层阻挡），为了平滑可以关，但需确保膨胀半径够大
+      max_allowed_time_to_collision_up_to_carrot: 1.0 
+      
+      # 弯道减速逻辑
+      use_regulated_linear_velocity_scaling: true
+      use_cost_regulated_linear_velocity_scaling: false
+      regulated_linear_scaling_min_radius: 0.9  # [增大] 在弯道半径小于0.9米时就开始减速，入弯更柔和
+      regulated_linear_scaling_min_speed: 0.25
+      
+      use_rotate_to_heading: true
+      rotate_to_heading_angular_vel: 1.0  # [减小] 原地调整角度时慢一点，防止太冲
+      allow_reversing: false
+      max_robot_pose_search_dist: 10.0
+      use_interpolation: true
+
+local_costmap:
+  local_costmap:
+    ros__parameters:
+      update_frequency: 5.0
+      publish_frequency: 2.0
+      global_frame: map
+      robot_base_frame: base_link
+      use_sim_time: True
+      rolling_window: true
+      width: 12
+      height: 12
+      resolution: 0.05
+      transform_tolerance: 0.5
+      footprint: "[ [0.1, 0.22], [0.1, -0.22], [-0.3, -0.22], [-0.3, 0.22] ]"
+      plugins: ["obstacle_layer", "inflation_layer"]
+      inflation_layer:
+        plugin: "nav2_costmap_2d::InflationLayer"
+        cost_scaling_factor: 30.0
+        inflation_radius: 0.15
+      obstacle_layer:
+        plugin: "nav2_costmap_2d::ObstacleLayer"
+        enabled: True
+        observation_sources: scan
+        scan:
+          topic: /scan
+          data_type: "LaserScan"
+          max_obstacle_height: 100.0 
+          min_obstacle_height: -100.0
+          raytrace_max_range: 4.0
+          raytrace_min_range: 0.0
+          obstacle_max_range: 3.5
+          obstacle_min_range: 0.0
+          clearing: True
+          marking: True
+          observation_persistence: 0.0
+      always_send_full_costmap: True
+
+global_costmap:
+  global_costmap:
+    ros__parameters:
+      update_frequency: 5.0
+      publish_frequency: 2.0
+      global_frame: map
+      robot_base_frame: base_link
+      use_sim_time: True
+      robot_radius: 0.22
+      footprint: "[ [0.1, 0.22], [0.1, -0.22], [-0.3, -0.22], [-0.3, 0.22] ]"
+      resolution: 0.05
+      track_unknown_space: true
+      rolling_window: true 
+      width: 20
+      height: 20
+      origin_x: -10.0
+      origin_y: -10.0
+      plugins: ["obstacle_layer", "inflation_layer"]
+      obstacle_layer:
+        plugin: "nav2_costmap_2d::ObstacleLayer"
+        enabled: True
+        observation_sources: scan
+        scan:
+          topic: /scan
+          max_obstacle_height: 2.0
+          clearing: True
+          marking: True
+          data_type: "LaserScan"
+          raytrace_max_range: 3.0
+          raytrace_min_range: 0.0
+          obstacle_max_range: 2.5
+          obstacle_min_range: 0.0
+          observation_persistence: 0.0
+      inflation_layer:
+        plugin: "nav2_costmap_2d::InflationLayer"
+        cost_scaling_factor: 20.0
+        inflation_radius: 0.35
+      always_send_full_costmap: True
+
+planner_server:
+  ros__parameters:
+    expected_planner_frequency: 0.0
+    use_sim_time: True
+    planner_plugins: ["GridBased"]
+    GridBased:
+      plugin: "nav2_navfn_planner/NavfnPlanner"
+      tolerance: 0.5
+      use_astar: false
+      allow_unknown: true
+
+smoother_server:
+  ros__parameters:
+    use_sim_time: True
+    smoother_plugins: ["simple_smoother"]
+    simple_smoother:
+      plugin: "nav2_smoother::SimpleSmoother"
+      tolerance: 1.0e-10
+      max_its: 1000
+      do_refinement: True
+
+behavior_server:
+  ros__parameters:
+    costmap_topic: local_costmap/costmap_raw
+    footprint_topic: local_costmap/published_footprint
+    cycle_frequency: 10.0
+    behavior_plugins: ["spin", "backup", "drive_on_heading", "assisted_teleop", "wait"]
+    spin:
+      plugin: "nav2_behaviors/Spin"
+    backup:
+      plugin: "nav2_behaviors/BackUp"
+    drive_on_heading:
+      plugin: "nav2_behaviors/DriveOnHeading"
+    wait:
+      plugin: "nav2_behaviors/Wait"
+    assisted_teleop:
+      plugin: "nav2_behaviors/AssistedTeleop"
+    global_frame: map
+    robot_base_frame: base_link
+    transform_tolerance: 0.5
+    use_sim_time: true
+    # [保持] 快速恢复逻辑
+    simulate_ahead_time: 1.0
+    max_rotational_vel: 3.2
+    min_rotational_vel: 1.0
+    rotational_acc_lim: 3.2
+
+robot_state_publisher:
+  ros__parameters:
+    use_sim_time: True
+
+waypoint_follower:
+  ros__parameters:
+    use_sim_time: True
+    loop_rate: 20
+    stop_on_failure: false
+    waypoint_task_executor_plugin: "wait_at_waypoint"
+    wait_at_waypoint:
+      plugin: "nav2_waypoint_follower::WaitAtWaypoint"
+      enabled: false
+      waypoint_pause_duration: 200
+
+velocity_smoother:
+  ros__parameters:
+    use_sim_time: True
+    smoothing_frequency: 20.0
+    scale_velocities: False
+    feedback: "OPEN_LOOP"
+    # [修改] 
+    # 线速度 X = 1.5
+    # 线速度 Y = 0.0 (差速车严禁非0)
+    # 角速度 Z = 1.8 (限制最大角速度，强迫控制器走大弯，防止急转)
+    max_velocity: [1.4, 0.0, 3.2]
+    
+    # [修改] 差速车倒车速度可以适当放开，或者保持负数
+    min_velocity: [-1.4, 0.0, -3.2]
+    
+    # [重要修改] 降低加速度，这是解决"震荡"的最后一道防线
+    # 线加速度 X = 0.8 (防止打滑)
+    # 角加速度 Z = 1.5 (原2.5，大幅降低。让转向更柔和，类似于增加了惯性)
+    max_accel: [0.8, 0.0, 2.0]
+    max_decel: [-0.8, 0.0, -2.0]
+    
+    odom_topic: "/kiss/odometry"
+    odom_duration: 0.1
+    # [修改] 差速车 Y 轴死区必须为 0
+    deadband_velocity: [0.0, 0.0, 0.0]
+    velocity_timeout: 1.0
