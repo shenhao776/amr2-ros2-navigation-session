@@ -231,8 +231,8 @@ ros2 service call /save_map std_srvs/srv/Trigger
 Wait for `success: true` or `success=True` before stopping the mapper with `Ctrl+C`. The navigation map is written to:
 
 ```text
-Tablet host: ~/shared_files/dataset/my_map_data/PCD/map_final_visualization.pcd
-Container:   /root/shared_files/dataset/my_map_data/PCD/map_final_visualization.pcd
+Tablet host: ~/shared_files/dataset/my_map_data/PCD/map_raw.pcd
+Container:   /root/shared_files/dataset/my_map_data/PCD/map_raw.pcd
 ```
 
 ## Part 4: Navigate from a command

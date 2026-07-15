@@ -143,7 +143,7 @@ ls -lh /root/shared_files/dataset/my_map_data/PCD/
 Navigation reads this fixed path:
 
 ```text
-/root/shared_files/dataset/my_map_data/PCD/map_final_visualization.pcd
+/root/shared_files/dataset/my_map_data/PCD/map_raw.pcd
 ```
 
 Confirm that the save service succeeded and the path matches exactly. If saving failed, rebuild and save the map; do not substitute an empty file.

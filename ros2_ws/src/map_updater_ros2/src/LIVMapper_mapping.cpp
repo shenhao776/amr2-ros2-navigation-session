@@ -5,11 +5,11 @@
  * an existing map are outside the scope of this project.
  */
 
-#include "LIVMapper.h"
-
 #include <pcl/io/pcd_io.h>
 
 #include <filesystem>
+
+#include "LIVMapper.h"
 
 void LIVMapper::timer_callback() {
   if (auto_mode_enabled_ && !auto_save_triggered_) {
@@ -46,8 +46,6 @@ void LIVMapper::savePCD() {
   const std::string pcd_dir = map_data_path_ + "/PCD/";
   std::filesystem::create_directories(pcd_dir);
   const std::string filtered_path = pcd_dir + "map_final_filtered.pcd";
-  const std::string visualization_path =
-      pcd_dir + "map_final_visualization.pcd";
   const std::string raw_path = pcd_dir + "map_raw.pcd";
   pcl::PCDWriter writer;
 
@@ -60,12 +58,10 @@ void LIVMapper::savePCD() {
     auto filtered = std::make_shared<PointCloudXYZRGB>();
     pcl::VoxelGrid<PointTypeRGB> voxel_filter;
     voxel_filter.setInputCloud(pcl_wait_save_);
-    voxel_filter.setLeafSize(filter_size_pcd, filter_size_pcd,
-                             filter_size_pcd);
+    voxel_filter.setLeafSize(filter_size_pcd, filter_size_pcd, filter_size_pcd);
     voxel_filter.filter(*filtered);
 
     writer.writeBinary(filtered_path, *filtered);
-    writer.writeBinary(visualization_path, *filtered);
     writer.writeBinary(raw_path, *pcl_wait_save_);
     LOG_INFO_F("[Map Save] RGB map saved with %lu filtered points.",
                filtered->size());
@@ -84,7 +80,6 @@ void LIVMapper::savePCD() {
   voxel_filter.filter(*filtered);
 
   writer.writeBinary(filtered_path, *filtered);
-  writer.writeBinary(visualization_path, *filtered);
   writer.writeBinary(raw_path, *pcl_wait_save_intensity_);
   LOG_INFO_F("[Map Save] Intensity map saved with %lu filtered points.",
              filtered->size());
@@ -97,18 +92,4 @@ void LIVMapper::saveMapCallback(
   LOG_INFO("\033[1;32mService /save_map called. Saving map...\033[0m");
 
   savePCD();
-
-  const std::string map_path =
-      map_data_path_ + "/PCD/map_final_visualization.pcd";
-  std::error_code error;
-  const bool saved = std::filesystem::exists(map_path, error) &&
-                     std::filesystem::file_size(map_path, error) > 0;
-
-  res->success = saved && !error;
-  if (res->success) {
-    res->message = "Map saved to " + map_path;
-  } else {
-    res->message = "Map save failed: no non-empty visualization map was created.";
-    LOG_ERROR_F("%s", res->message.c_str());
-  }
 }

@@ -240,7 +240,7 @@ ros2 service call /save_map std_srvs/srv/Trigger
 Calls the `/save_map` service using the empty `std_srvs/srv/Trigger` request type. Wait for `success: true` before stopping the mapper. The navigation map is written to:
 
 ```text
-/root/shared_files/dataset/my_map_data/PCD/map_final_visualization.pcd
+/root/shared_files/dataset/my_map_data/PCD/map_raw.pcd
 ```
 
 ## Keyboard control and interruption

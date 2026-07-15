@@ -12,8 +12,7 @@
       scan_min_range: 1.0
       scan_period: 0.1
       use_pcd_map: true
-      # map_path: "/root/shared_files/map/inlab.pcd"
-      map_path: "/root/shared_files/dataset/my_map_data/PCD/map_final_visualization.pcd"
+      map_path: "/root/shared_files/dataset/my_map_data/PCD/map_raw.pcd"
       set_initial_pose: true
 
       # fix the initial pose here
